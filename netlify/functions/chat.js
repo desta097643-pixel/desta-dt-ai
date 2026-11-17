@@ -3,17 +3,25 @@ exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
-      body: JSON.stringify({ error: "POST only" })
+      body: JSON.stringify({
+        error: "POST method required"
+      })
     };
   }
 
   try {
-    const { message } = JSON.parse(event.body || "{}");
+    const body = JSON.parse(event.body || "{}");
+    const message = body.message;
 
-    if (!message || !message.trim()) {
+    if (
+      typeof message !== "string" ||
+      !message.trim()
+    ) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: "Message is required" })
+        body: JSON.stringify({
+          error: "Please enter a message"
+        })
       };
     }
 
@@ -22,7 +30,9 @@ exports.handler = async (event) => {
     if (!apiKey) {
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: "AI key is not configured" })
+        body: JSON.stringify({
+          error: "AI key is not configured"
+        })
       };
     }
 
@@ -37,7 +47,7 @@ exports.handler = async (event) => {
         body: JSON.stringify({
           model: "gpt-6-astra",
           instructions:
-            "You are Desta DT AI, a helpful multilingual assistant. Reply in the same language the user uses. Support Amharic, English, Arabic, French, and other languages. Be friendly and clear.",
+            "You are Desta DT AI, a helpful multilingual AI assistant. Reply in the same language the user writes in. Support Amharic, English, Arabic, French and other languages. Be friendly, accurate and easy to understand.",
           input: message
         })
       }
@@ -49,7 +59,7 @@ exports.handler = async (event) => {
       return {
         statusCode: response.status,
         body: JSON.stringify({
-          error: "AI request failed"
+          error: data.error?.message || "AI request failed"
         })
       };
     }
@@ -68,7 +78,7 @@ exports.handler = async (event) => {
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: "Something went wrong."
+        error: "Something went wrong. Please try again."
       })
     };
   }
